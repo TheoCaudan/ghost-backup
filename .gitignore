@@ -1,0 +1,31 @@
+*.tmp
+*.temp
+*.swp
+*.swo
+*.bak
+*.bak-*
+*~
+
+.env
+.env.*
+!.env.example
+secrets/
+private/
+credentials/
+*.pem
+
+
+# Paquets compilés
+*.pkg.tar
+*.pkg.tar.*
+
+# Clés privées et certificats
+.ssh/
+id_rsa
+id_ed25519
+id_ecdsa
+id_dsa
+*.key
+*.p12
+*.pfx
+*.ppk
