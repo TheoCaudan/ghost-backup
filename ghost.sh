@@ -7,6 +7,7 @@ GHOST_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 CHECK_SCRIPT="$GHOST_DIR/compatibility/check.sh"
 GRAPHICS_SCRIPT="$GHOST_DIR/compatibility/checks/graphics.sh"
 COMMANDS_SCRIPT="$GHOST_DIR/compatibility/checks/commands.sh"
+NETWORK_SCRIPT="$GHOST_DIR/compatibility/checks/network.sh"
 
 usage() {
     cat <<'USAGE'
@@ -85,6 +86,7 @@ check_prerequisites() {
         "$CHECK_SCRIPT" \
         "$GRAPHICS_SCRIPT" \
         "$COMMANDS_SCRIPT" \
+        "$NETWORK_SCRIPT" \
         "$GHOST_DIR/scripts/plan.sh"
     do
         if [[ -x "$file" ]]; then
@@ -118,7 +120,8 @@ run_checks() {
     for script in \
         "$CHECK_SCRIPT" \
         "$GRAPHICS_SCRIPT" \
-        "$COMMANDS_SCRIPT"
+        "$COMMANDS_SCRIPT" \
+        "$NETWORK_SCRIPT"
     do
         printf '\n--- %s ---\n' "${script#"$GHOST_DIR"/}"
 
