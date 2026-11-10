@@ -7,10 +7,11 @@ HYPR_DIR="$DOTFILES_DIR/config/hypr"
 MAIN_CONFIG="$HYPR_DIR/hyprland.lua"
 MONITOR_CONFIG="$HYPR_DIR/configs/monitors.lua"
 
+ERRORS=0
 ok()      { printf '[OK]      %s\n' "$1"; }
 info()    { printf '[INFO]    %s\n' "$1"; }
 warning() { printf '[WARNING] %s\n' "$1"; }
-error()   { printf '[ERROR]   %s\n' "$1"; }
+error()   { printf '[ERROR]   %s\n' "$1"; ((ERRORS += 1)); }
 
 printf '\n===== CONTRÔLE GRAPHIQUE =====\n'
 
@@ -163,3 +164,8 @@ fi
 
 printf '\n===== FIN DU CONTRÔLE GRAPHIQUE =====\n'
 printf 'Aucune modification effectuée.\n'
+
+if (( ERRORS > 0 )); then
+    printf '[ERROR]   %s erreur(s) détectée(s).\n' "$ERRORS"
+    exit 1
+fi
