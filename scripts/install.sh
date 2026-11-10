@@ -86,7 +86,7 @@ show_plan() {
     pacman_present=$((${#pacman_packages[@]} - ${#missing_pacman[@]}))
     yay_present=$((${#yay_packages[@]} - ${#missing_yay[@]}))
 
-    printf '\n===== GHOST BACKUP : PLAN D INSTALLATION =====\n'
+    printf "\n===== GHOST BACKUP : PLAN D'INSTALLATION =====\n"
     printf 'Mode : %s\n' "$MODE"
     printf 'Dépôt dotfiles : %s\n' "$DOTFILES_DIR"
 
@@ -117,6 +117,34 @@ show_plan() {
     else
         printf '[OK] Tous les paquets AUR sont déjà présents.\n'
     fi
+}
+
+# Vérifie, sans rien installer, que pacman sait résoudre les paquets manquants.
+# Retourne 1 si une cible est introuvable (paquet renommé, multilib désactivé,
+# base de données absente ou ancienne).
+validate_targets() {
+    local output
+
+    printf '\n--- Validation des cibles pacman ---\n'
+
+    if ((${#missing_pacman[@]} == 0)); then
+        printf '[OK] Rien à valider.\n'
+        return 0
+    fi
+
+    if ! pacman-conf --repo-list 2>/dev/null | grep -qx multilib; then
+        printf '[INFO] Dépôt multilib désactivé : steam et les paquets lib32-* sont indisponibles.\n'
+    fi
+
+    if output="$(pacman -Sp --needed -- "${missing_pacman[@]}" 2>&1 >/dev/null)"; then
+        printf '[OK] Toutes les cibles pacman sont résolues.\n'
+        return 0
+    fi
+
+    printf '[ERROR] pacman ne peut pas résoudre toutes les cibles :\n'
+    printf '%s\n' "$output" | sed 's/^/  /'
+    printf '[INFO] Base de données absente ou ancienne : sudo pacman -Syu\n'
+    return 1
 }
 
 bootstrap_yay() {
@@ -196,6 +224,7 @@ bootstrap_yay() {
 
     printf '[OK] Yay est disponible.\n'
 }
+
 apply_installation() {
     if (( EUID == 0 )); then
         error "Ne lance pas Ghost en root. Utilise ton compte normal."
@@ -239,7 +268,7 @@ apply_installation() {
         fi
     fi
 
-    printf '\n[OK] Opérations d installation terminées.\n'
+    printf "\n[OK] Opérations d'installation terminées.\n"
 }
 
 main() {
@@ -287,6 +316,7 @@ main() {
     local -a yay_packages=()
     local -a missing_pacman=()
     local -a missing_yay=()
+    local validation_failed=0
 
     declare -A installed=()
 
@@ -297,9 +327,21 @@ main() {
     calculate_missing
     show_plan
 
+    validate_targets || validation_failed=1
+
     if [[ "$MODE" == "SIMULATION — aucune modification" ]]; then
+        if (( validation_failed )); then
+            printf '\n[WARNING] Simulation terminée, mais certaines cibles ne sont pas résolues.\n'
+            return 1
+        fi
+
         printf '\n[OK] Simulation terminée. Aucune installation lancée.\n'
         return 0
+    fi
+
+    if (( validation_failed )); then
+        error "Cibles pacman non résolues : corrige avant de lancer --apply."
+        return 1
     fi
 
     apply_installation
