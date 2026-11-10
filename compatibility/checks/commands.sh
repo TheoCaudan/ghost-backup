@@ -86,7 +86,7 @@ if (( EXEC_ACTIVE )); then
         dunst \
         hyprpaper \
         nm-applet \
-        lxsession \
+        lxpolkit \
         udiskie \
         foot \
         hyprctl
@@ -94,9 +94,15 @@ if (( EXEC_ACTIVE )); then
         check_command "$name"
     done
 
+    if pacman -Q lxsession >/dev/null 2>&1; then
+        ok "Paquet lxsession installé."
+    else
+        warning "Paquet lxsession absent (fournit lxpolkit)."
+        missing=1
+    fi
+
     printf '\n--- Chemins absolus de exec.lua ---\n'
     check_path "/usr/bin/waybar"
-    check_path "/usr/lib/polkit-kde-authentication-agent-1"
 fi
 
 if (( KEYBIND_ACTIVE )); then

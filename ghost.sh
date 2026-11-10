@@ -3,7 +3,7 @@
 set -Eeuo pipefail
 
 GHOST_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-
+HARDWARE_SCRIPT="$GHOST_DIR/compatibility/hardware/collect.sh"
 CHECK_SCRIPT="$GHOST_DIR/compatibility/check.sh"
 GRAPHICS_SCRIPT="$GHOST_DIR/compatibility/checks/graphics.sh"
 COMMANDS_SCRIPT="$GHOST_DIR/compatibility/checks/commands.sh"
@@ -18,6 +18,8 @@ Usage:
   ./ghost.sh plan     Affiche l'état actuel du projet
   ./ghost.sh verify   Vérifie les prérequis
   ./ghost.sh install [--dry-run|--apply]  Prépare ou exécute le plan
+  ./ghost.sh hardware [--human|--json] Détecte le matériel
+  ./ghost.sh doctor   Lance le diagnostic global
   ./ghost.sh help     Affiche cette aide
 USAGE
 }
@@ -87,6 +89,7 @@ check_prerequisites() {
         "$GRAPHICS_SCRIPT" \
         "$COMMANDS_SCRIPT" \
         "$NETWORK_SCRIPT" \
+        "$HARDWARE_SCRIPT" \
         "$GHOST_DIR/scripts/plan.sh"
     do
         if [[ -x "$file" ]]; then
@@ -152,6 +155,33 @@ run_checks() {
     return 0
 }
 
+run_doctor() {
+    local errors=0
+
+    printf '\n===== GHOST BACKUP : DIAGNOSTIC GLOBAL =====\n'
+
+    printf '\n--- Compatibilité logicielle ---\n'
+    if ! run_checks; then
+        ((errors += 1))
+    fi
+
+    printf '\n--- Inventaire matériel ---\n'
+    if ! "$HARDWARE_SCRIPT" --human; then
+        printf '[ERROR] Échec de la collecte matérielle.\n'
+        ((errors += 1))
+    fi
+
+    printf '\n===== RÉSUMÉ DOCTOR =====\n'
+
+    if (( errors > 0 )); then
+        printf '[WARNING] Le diagnostic a rencontré %s erreur(s).\n' "$errors"
+        return 1
+    fi
+
+    printf '[OK] Diagnostic terminé. Aucune modification effectuée.\n'
+    return 0
+}
+
 main() {
     local action="${1:-help}"
 
@@ -189,6 +219,29 @@ main() {
             fi
 
             "$INSTALL_SCRIPT" "$install_mode"
+            ;;
+        hardware)
+            if [[ ! -x "$HARDWARE_SCRIPT" ]]; then
+                printf '[ERROR] Collecteur matériel absent ou non exécutable.'
+                exit 1
+            fi
+
+            local hardware_mode="${2:---human}"
+
+            if [[ $# -gt 2 ]] || [[ "$hardware_mode" != "--human" && "$hardware_mode" != "--json" ]]; then
+                printf 'Usage: ./ghost.sh hardware [--human|--json]\n' >&2
+                exit 2
+            fi
+
+            "$HARDWARE_SCRIPT" "$hardware_mode"
+            ;;
+        doctor)
+            if [[ ! -x "$HARDWARE_SCRIPT" ]]; then
+                printf '[ERROR] Collecteur matériel absent ou non exécutable.\n' >&2
+                exit 1
+            fi
+
+            run_doctor
             ;;
         help|-h|--help)
             usage
