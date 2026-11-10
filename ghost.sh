@@ -207,7 +207,7 @@ main() {
             INSTALL_SCRIPT="$GHOST_DIR/scripts/install.sh"
 
             if [[ ! -x "$INSTALL_SCRIPT" ]]; then
-                printf '[ERROR] Moteur d’installation absent ou non exécutable.\n' >&2
+                printf '[ERROR] Moteur d installation absent ou non exécutable.\n' >&2
                 exit 1
             fi
 

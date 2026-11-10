@@ -86,7 +86,7 @@ show_plan() {
     pacman_present=$((${#pacman_packages[@]} - ${#missing_pacman[@]}))
     yay_present=$((${#yay_packages[@]} - ${#missing_yay[@]}))
 
-    printf '\n===== GHOST BACKUP : PLAN D’INSTALLATION =====\n'
+    printf '\n===== GHOST BACKUP : PLAN D INSTALLATION =====\n'
     printf 'Mode : %s\n' "$MODE"
     printf 'Dépôt dotfiles : %s\n' "$DOTFILES_DIR"
 
@@ -239,7 +239,7 @@ apply_installation() {
         fi
     fi
 
-    printf '\n[OK] Opérations d’installation terminées.\n'
+    printf '\n[OK] Opérations d installation terminées.\n'
 }
 
 main() {
