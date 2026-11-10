@@ -36,6 +36,7 @@ lspci -Dnnk > "$tmpdir/pci"
 
 os_name="inconnu"
 if [[ -r "$GHOST_OS_RELEASE" ]]; then
+    # shellcheck source=/dev/null
     . "$GHOST_OS_RELEASE"
     os_name="${NAME:-inconnu}"
 fi
