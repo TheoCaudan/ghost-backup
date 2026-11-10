@@ -196,7 +196,7 @@ bootstrap_yay() {
 
         mapfile -d '' -t built_packages < <(
             find . -maxdepth 1 -type f \
-                -name 'yay-*.pkg.tar.*' ! -name '*.sig' -print0
+                -name 'yay-*.pkg.tar.*' ! -name 'yay-debug-*' ! -name '*.sig' -print0
         )
 
         if ((${#built_packages[@]} != 1)); then
